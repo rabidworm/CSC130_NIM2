@@ -8,12 +8,14 @@ public class Computer {
 	
 	private HashMap<Board, Record> boardState;
 	
+	public static Random gen = new Random();
+	
 	public Computer(){
 		boardState = new HashMap<Board, Record>();
 	}
 	
 	public Board makeMove(Board theBoard){
-		ArrayList<Board> possibleMoves = generatePossibleMoves(theBoard);
+		ArrayList<Board> possibleMoves = generatePossibleMoves(theBoard.getRows());
 		updateBoardHashMap(possibleMoves);
 		
 		Board newBoardState = determineBestMove(possibleMoves);
@@ -21,23 +23,25 @@ public class Computer {
 		return newBoardState;
 	}
 	
-	private ArrayList<Board> generatePossibleMoves(Board theBoard){
+	private ArrayList<Board> generatePossibleMoves(int[] boardRows){
 		ArrayList<Board> possibleMoves = new ArrayList<Board>();
 		
-		for(int i = (theBoard.getRow1() - 1); i >= 0; i--)
-			possibleMoves.add(new Board(i, theBoard.getRow2(), theBoard.getRow3()));
-		for(int i = (theBoard.getRow2() - 1); i >= 0; i--)
-			possibleMoves.add(new Board(theBoard.getRow1(), i, theBoard.getRow3()));
-		for(int i = (theBoard.getRow3() - 1); i >= 0; i--)
-			possibleMoves.add(new Board(theBoard.getRow1(), theBoard.getRow2(), i));
+		for(int i = (boardRows[Board.TOP] - 1); i >= 0; i--)
+			possibleMoves.add(new Board(i, boardRows[Board.MID], boardRows[Board.TOP]));
+		
+		for(int i = (boardRows[Board.MID] - 1); i >= 0; i--)
+			possibleMoves.add(new Board(boardRows[Board.TOP], i, boardRows[Board.LOW]));
+		
+		for(int i = (boardRows[Board.LOW] - 1); i >= 0; i--)
+			possibleMoves.add(new Board(boardRows[Board.TOP], boardRows[Board.MID], i));
 		
 		return possibleMoves;
 	}
 	
 	private void updateBoardHashMap(ArrayList<Board> possibleMoves){
-		for(Board b : possibleMoves){
-			if(!boardState.containsKey(b)){
-				boardState.put(b, new Record());
+		for(Board possibleMove : possibleMoves){
+			if(!boardState.containsKey(possibleMove)){
+				boardState.put(possibleMove, new Record());
 			}
 		}
 	}
@@ -45,22 +49,21 @@ public class Computer {
 	private Board determineBestMove(ArrayList<Board> possibleMoves){
 		Board bestMoveState = null;
 		Record bestRecord = null;
-		Random gen = new Random();
 		
-		for(Board b : possibleMoves){
+		for(Board possibleMove : possibleMoves){
 			if(bestMoveState == null){
-				bestMoveState = b;
-				bestRecord = boardState.get(b);
+				bestMoveState = possibleMove;
+				bestRecord = boardState.get(possibleMove);
 			}
 			else{
-				if(boardState.get(b).getWinRate() > bestRecord.getWinRate()){
-					bestMoveState = b;
-					bestRecord = boardState.get(b);
+				if(boardState.get(possibleMove).getWinRate() > bestRecord.getWinRate()){
+					bestMoveState = possibleMove;
+					bestRecord = boardState.get(possibleMove);
 				}
-				else if(boardState.get(b).getWinRate() == bestRecord.getWinRate()){
+				else if(boardState.get(possibleMove).getWinRate() == bestRecord.getWinRate()){
 					if(gen.nextInt(10) == 5){
-						bestMoveState = b;
-						bestRecord = boardState.get(b);
+						bestMoveState = possibleMove;
+						bestRecord = boardState.get(possibleMove);
 					}
 				}
 			}
